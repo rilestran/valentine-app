@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jennifer, Will You Be My Valentine?</title>
+<title>Be My Valentine?</title>
 
 <style>
 body {
@@ -31,6 +31,7 @@ button {
     border-radius: 10px;
     cursor: pointer;
     position: absolute;
+    z-index: 2;
 }
 
 #yesBtn {
@@ -47,14 +48,38 @@ button {
     top: 50%;
 }
 
-.message {
+.success-container {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 65%;
+    top: 40%;
+    display: none;
+    z-index: 2;
+}
+
+.success-message {
     font-size: 2rem;
     color: white;
-    display: none;
+    margin-bottom: 20px;
+}
+
+.success-container img {
+    width: 250px;
+    border-radius: 20px;
+}
+
+.heart {
+    position: absolute;
+    color: #ff4d6d;
+    font-size: 24px;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
 }
 </style>
 </head>
@@ -64,12 +89,23 @@ button {
 <h1>Jennifer, Will you be my Valentine? 💖</h1>
 <button id="yesBtn">Yes</button>
 <button id="noBtn">No</button>
-<div class="message" id="loveMessage">Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!</div>
+
+<div class="success-container" id="successContainer">
+    <div class="success-message">
+        Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
+    </div>
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Dancing Cat">
+</div>
+
+<audio id="loveSong" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
-const message = document.getElementById("loveMessage");
+const successContainer = document.getElementById("successContainer");
+const loveSong = document.getElementById("loveSong");
 
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
@@ -93,25 +129,21 @@ function animate() {
     const dx = centerX - mouseX;
     const dy = centerY - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-
     const safeDistance = 200;
 
-    if (distance < safeDistance) {
+    if (distance < safeDistance && distance > 0) {
         const force = (safeDistance - distance) / safeDistance;
-        const accel = 1.5 * force; // acceleration increases closer you get
-
+        const accel = 1.8 * force;
         velocityX += (dx / distance) * accel;
         velocityY += (dy / distance) * accel;
     }
 
-    // friction for smooth slow-down
     velocityX *= 0.92;
     velocityY *= 0.92;
 
     posX += velocityX;
     posY += velocityY;
 
-    // Keep inside screen
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
 
@@ -123,13 +155,36 @@ function animate() {
 
     requestAnimationFrame(animate);
 }
-
 animate();
 
+function createHearts() {
+    for (let i = 0; i < 40; i++) {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerText = "💖";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = (3 + Math.random() * 2) + "s";
+        document.body.appendChild(heart);
+
+        setTimeout(() => heart.remove(), 5000);
+    }
+}
+
 yesBtn.addEventListener("click", () => {
-    message.style.display = "block";
     yesBtn.style.display = "none";
     noBtn.style.display = "none";
+    document.querySelector("h1").style.display = "none";
+    successContainer.style.display = "block";
+
+    loveSong.play();
+
+    confetti({
+        particleCount: 200,
+        spread: 120,
+        origin: { y: 0.6 }
+    });
+
+    createHearts();
 });
 </script>
 
