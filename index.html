@@ -1,107 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Be My Valentine?</title>
 
 <style>
-body {
+  body {
     margin: 0;
     height: 100vh;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     font-family: Arial, sans-serif;
     overflow: hidden;
     position: relative;
-}
+  }
 
-/* Title */
-h1 {
+  h1 {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 15%;
+    top: 14%;
     font-size: 2.5rem;
     color: white;
     margin: 0;
-    z-index: 2;
-}
+    padding: 0 16px;
+    box-sizing: border-box;
+    z-index: 3;
+  }
 
-/* Cat Grid */
-.cat-container {
+  /* 5 Cats row */
+  .cat-container {
     position: absolute;
     top: 28%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 20px;
-    z-index: 1;
-}
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: min(920px, 92vw);
+    z-index: 3; /* make sure they’re visible */
+    pointer-events: none;
+  }
 
-.cat-container img {
+  .cat {
     width: 140px;
-    border-radius: 15px;
-}
+    height: 140px;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.25);
+  }
 
-/* Centered Button Container */
-.button-container {
+  /* Center the YES/NO area */
+  .button-container {
     position: absolute;
     top: 70%;
     left: 50%;
     transform: translate(-50%, -50%);
     display: flex;
-    gap: 25px;
-    z-index: 2;
-}
+    gap: 24px;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+  }
 
-button {
+  button {
     padding: 15px 30px;
     font-size: 1.2rem;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-}
+    user-select: none;
+  }
 
-#yesBtn {
+  #yesBtn {
     background-color: #ff4d6d;
     color: white;
-}
+  }
 
-#noBtn {
+  /* IMPORTANT: make NO fixed so left/top match viewport coords */
+  #noBtn {
     background-color: white;
     color: #ff4d6d;
-    position: absolute;
-}
+    position: fixed;   /* <-- key fix */
+    left: 0;
+    top: 0;
+    z-index: 5;
+  }
 
-/* Success Message */
-.success-container {
+  .success-container {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 40%;
+    top: 38%;
     display: none;
-    z-index: 2;
-}
+    z-index: 6;
+  }
 
-.success-message {
+  .success-message {
     font-size: 2rem;
     color: white;
-    margin-bottom: 20px;
-}
+    margin: 0 16px 20px;
+  }
 
-/* Floating Hearts */
-.heart {
+  .heart {
     position: absolute;
     font-size: 24px;
     animation: fall linear forwards;
-}
+    z-index: 2;
+  }
 
-@keyframes fall {
+  @keyframes fall {
     to {
-        transform: translateY(100vh);
-        opacity: 0;
+      transform: translateY(100vh);
+      opacity: 0;
     }
-}
+  }
 </style>
 </head>
 
@@ -110,23 +125,24 @@ button {
 <h1>Jennifer, Will you be my Valentine? 💖</h1>
 
 <!-- 5 Dancing Cats -->
-<div class="cat-container">
-    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
-    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
-    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
-    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
-    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
+<div class="cat-container" aria-hidden="true">
+  <img class="cat" alt="Dancing cat 1">
+  <img class="cat" alt="Dancing cat 2">
+  <img class="cat" alt="Dancing cat 3">
+  <img class="cat" alt="Dancing cat 4">
+  <img class="cat" alt="Dancing cat 5">
 </div>
 
 <div class="button-container" id="buttonContainer">
-    <button id="yesBtn">Yes</button>
-    <button id="noBtn">No</button>
+  <button id="yesBtn">Yes</button>
+  <!-- NO button is positioned via JS (fixed), but we keep it in DOM here -->
+  <button id="noBtn">No</button>
 </div>
 
 <div class="success-container" id="successContainer">
-    <div class="success-message">
-        Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
-    </div>
+  <div class="success-message">
+    Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
+  </div>
 </div>
 
 <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
@@ -134,32 +150,93 @@ button {
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-const noBtn = document.getElementById("noBtn");
-const yesBtn = document.getElementById("yesBtn");
-const buttonContainer = document.getElementById("buttonContainer");
-const successContainer = document.getElementById("successContainer");
-const loveSong = document.getElementById("loveSong");
+  const noBtn = document.getElementById("noBtn");
+  const yesBtn = document.getElementById("yesBtn");
+  const buttonContainer = document.getElementById("buttonContainer");
+  const successContainer = document.getElementById("successContainer");
+  const loveSong = document.getElementById("loveSong");
 
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
+  // --- Cat GIF loading with fallbacks ---
+  const catImgs = Array.from(document.querySelectorAll(".cat"));
 
-// Start NO button near center
-let rect = buttonContainer.getBoundingClientRect();
-let posX = rect.left + 120;
-let posY = rect.top;
+  // Try several hosts (some networks block some domains)
+  const gifSources = [
+    "https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif",
+    "https://media.tenor.com/5WZ0GfQ0a1AAAAAC/cat-dance.gif",
+    "https://i.gifer.com/origin/2b/2b8f4c8a8c9b0d2e7c6b8b2e5c4b6f4b.gif"
+  ];
 
-let velocityX = 0;
-let velocityY = 0;
+  function setCatSource(img, idx) {
+    let attempt = 0;
 
-noBtn.style.left = posX + "px";
-noBtn.style.top = posY + "px";
+    function tryNext() {
+      if (attempt >= gifSources.length) {
+        // final fallback: show an emoji tile if all GIFs fail
+        img.replaceWith(makeEmojiCat(idx));
+        return;
+      }
+      img.src = gifSources[attempt] + (attempt === 0 ? "" : ("?v=" + Date.now()));
+      attempt++;
+    }
 
-document.addEventListener("mousemove", (e) => {
+    img.onerror = tryNext;
+    tryNext();
+  }
+
+  function makeEmojiCat(idx) {
+    const div = document.createElement("div");
+    div.className = "cat";
+    div.style.display = "grid";
+    div.style.placeItems = "center";
+    div.style.fontSize = "54px";
+    div.style.color = "white";
+    div.style.background = "rgba(255,255,255,0.18)";
+    div.textContent = "🐱💃";
+    div.setAttribute("aria-label", "Dancing cat fallback " + (idx + 1));
+    return div;
+  }
+
+  catImgs.forEach(setCatSource);
+
+  // --- Mouse tracking ---
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+
+  document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-});
+  });
 
-function animate() {
+  // --- Place NO button initially next to YES (using viewport coords) ---
+  let posX = 0;
+  let posY = 0;
+  let velocityX = 0;
+  let velocityY = 0;
+
+  function placeNoNearYes() {
+    const yesRect = yesBtn.getBoundingClientRect();
+    const noRect = noBtn.getBoundingClientRect();
+
+    // Put NO to the right of YES, centered vertically
+    posX = yesRect.right + 24;
+    posY = yesRect.top + (yesRect.height / 2) - (noRect.height / 2);
+
+    // Clamp within viewport
+    posX = Math.max(0, Math.min(window.innerWidth - noRect.width, posX));
+    posY = Math.max(0, Math.min(window.innerHeight - noRect.height, posY));
+
+    noBtn.style.left = posX + "px";
+    noBtn.style.top = posY + "px";
+  }
+
+  // Wait a tick so layout is ready
+  window.addEventListener("load", placeNoNearYes);
+  window.addEventListener("resize", placeNoNearYes);
+
+  // --- Runaway animation ---
+  const safeDistance = 100; // ✅ activation distance requested
+
+  function animate() {
     const rect = noBtn.getBoundingClientRect();
     const centerX = posX + rect.width / 2;
     const centerY = posY + rect.height / 2;
@@ -168,18 +245,16 @@ function animate() {
     const dy = centerY - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    const safeDistance = 100; // 🔥 ACTIVATION DISTANCE SET TO 100
-
     if (distance < safeDistance && distance > 0) {
-        const force = (safeDistance - distance) / safeDistance;
-        const accel = 5 * force; // slightly snappier
-
-        velocityX += (dx / distance) * accel;
-        velocityY += (dy / distance) * accel;
+      const force = (safeDistance - distance) / safeDistance;
+      const accel = 6 * force; // snappy but controllable
+      velocityX += (dx / distance) * accel;
+      velocityY += (dy / distance) * accel;
     }
 
-    velocityX *= 0.90;
-    velocityY *= 0.90;
+    // friction
+    velocityX *= 0.88;
+    velocityY *= 0.88;
 
     posX += velocityX;
     posY += velocityY;
@@ -187,6 +262,7 @@ function animate() {
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
 
+    // Clamp so it never leaves screen
     posX = Math.max(0, Math.min(maxX, posX));
     posY = Math.max(0, Math.min(maxY, posY));
 
@@ -194,23 +270,23 @@ function animate() {
     noBtn.style.top = posY + "px";
 
     requestAnimationFrame(animate);
-}
-animate();
+  }
+  animate();
 
-function createHearts() {
+  // --- Hearts & YES handler ---
+  function createHearts() {
     for (let i = 0; i < 70; i++) {
-        const heart = document.createElement("div");
-        heart.classList.add("heart");
-        heart.innerText = "💖";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.animationDuration = (3 + Math.random() * 2) + "s";
-        document.body.appendChild(heart);
-
-        setTimeout(() => heart.remove(), 5000);
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.innerText = "💖";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = (3 + Math.random() * 2) + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 5000);
     }
-}
+  }
 
-yesBtn.addEventListener("click", () => {
+  yesBtn.addEventListener("click", () => {
     buttonContainer.style.display = "none";
     document.querySelector("h1").style.display = "none";
     successContainer.style.display = "block";
@@ -218,13 +294,13 @@ yesBtn.addEventListener("click", () => {
     loveSong.play().catch(() => {});
 
     confetti({
-        particleCount: 300,
-        spread: 140,
-        origin: { y: 0.6 }
+      particleCount: 300,
+      spread: 140,
+      origin: { y: 0.6 }
     });
 
     createHearts();
-});
+  });
 </script>
 
 </body>
