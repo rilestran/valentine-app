@@ -127,16 +127,8 @@ document.addEventListener("mousemove", (e) => {
 });
 
 // Button physics
-let posX, posY;
-
-function setInitialPosition() {
-  const rect = noBtn.getBoundingClientRect();
-  posX = rect.left;
-  posY = rect.top;
-}
-
-setInitialPosition();
-window.addEventListener("resize", setInitialPosition);
+let posX = window.innerWidth * 0.55;
+let posY = window.innerHeight * 0.5;
 let vx = 0;
 let vy = 0;
 
