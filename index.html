@@ -11,27 +11,17 @@ body {
     height: 100vh;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     overflow: hidden;
     position: relative;
 }
 
-.container {
-    text-align: center;
-}
-
 h1 {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 20%;
     font-size: 2.5rem;
     color: white;
-    margin-bottom: 40px;
-}
-
-.button-row {
-    position: relative;
-    width: 400px;
-    height: 60px;
 }
 
 button {
@@ -41,22 +31,30 @@ button {
     border-radius: 10px;
     cursor: pointer;
     position: absolute;
+    z-index: 2;
 }
 
 #yesBtn {
     background-color: #ff4d6d;
     color: white;
+    left: 45%;
+    top: 50%;
 }
 
 #noBtn {
     background-color: white;
     color: #ff4d6d;
+    left: 55%;
+    top: 50%;
 }
 
 .success-container {
     position: absolute;
+    width: 100%;
     text-align: center;
+    top: 35%;
     display: none;
+    z-index: 2;
 }
 
 .success-message {
@@ -87,20 +85,15 @@ button {
 
 <body>
 
-<div class="container">
-    <h1>Jennifer, Will you be my Valentine? 💖</h1>
-
-    <div class="button-row">
-        <button id="yesBtn">Yes</button>
-        <button id="noBtn">No</button>
-    </div>
-</div>
+<h1>Jennifer, Will you be my Valentine? 💖</h1>
+<button id="yesBtn">Yes</button>
+<button id="noBtn">No</button>
 
 <div class="success-container" id="successContainer">
     <div class="success-message">
         Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
     </div>
-    <img src="silly-cat-dance.gif" alt="Silly Dancing Cat">
+   <img src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Dancing Cat">
 </div>
 
 <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
@@ -113,97 +106,107 @@ const yesBtn = document.getElementById("yesBtn");
 const successContainer = document.getElementById("successContainer");
 const loveSong = document.getElementById("loveSong");
 
-const buttonRow = document.querySelector(".button-row");
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
 
-let mouseX = 0;
-let mouseY = 0;
+let posX = window.innerWidth * 0.55;
+let posY = window.innerHeight * 0.5;
 
 let velocityX = 0;
 let velocityY = 0;
-let isActivated = false;
 
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 });
 
-// Set initial positions manually (centered layout)
-window.onload = () => {
-    const rowRect = buttonRow.getBoundingClientRect();
-    const yesRect = yesBtn.getBoundingClientRect();
-    const noRect = noBtn.getBoundingClientRect();
-
-    yesBtn.style.left = rowRect.width * 0.25 - yesRect.width / 2 + "px";
-    noBtn.style.left = rowRect.width * 0.75 - noRect.width / 2 + "px";
-
-    yesBtn.style.top = "0px";
-    noBtn.style.top = "0px";
-};
-
 function animate() {
     const rect = noBtn.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const centerX = posX + rect.width / 2;
+    const centerY = posY + rect.height / 2;
 
     const dx = centerX - mouseX;
     const dy = centerY - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
+    const safeDistance = 220;
 
-    const activationDistance = 140;
-
-    if (distance < activationDistance) {
-        isActivated = true;
-    }
-
-    if (isActivated && distance > 0) {
-        const force = (activationDistance - distance) / activationDistance;
-        const accel = 1.5 * force;
+    // Accelerate away from mouse
+    if (distance < safeDistance && distance > 0) {
+        const force = (safeDistance - distance) / safeDistance;
+        const accel = 3.5 * force;
 
         velocityX += (dx / distance) * accel;
         velocityY += (dy / distance) * accel;
     }
 
+    // Apply friction
     velocityX *= 0.92;
     velocityY *= 0.92;
 
-    let newLeft = rect.left + velocityX;
-    let newTop = rect.top + velocityY;
+    posX += velocityX;
+    posY += velocityY;
 
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
 
-    newLeft = Math.max(0, Math.min(maxX, newLeft));
-    newTop = Math.max(0, Math.min(maxY, newTop));
+    // Bounce off left/right walls
+    if (posX <= 0) {
+        posX = 0;
+        velocityX = Math.abs(velocityX) + 2;
+    }
+    if (posX >= maxX) {
+        posX = maxX;
+        velocityX = -Math.abs(velocityX) - 2;
+    }
 
-    noBtn.style.left = newLeft + "px";
-    noBtn.style.top = newTop + "px";
+    // Bounce off top/bottom walls
+    if (posY <= 0) {
+        posY = 0;
+        velocityY = Math.abs(velocityY) + 2;
+    }
+    if (posY >= maxY) {
+        posY = maxY;
+        velocityY = -Math.abs(velocityY) - 2;
+    }
+
+    // Extra anti-corner boost
+    const edgeBuffer = 40;
+    if (posX < edgeBuffer) velocityX += 1.5;
+    if (posX > maxX - edgeBuffer) velocityX -= 1.5;
+    if (posY < edgeBuffer) velocityY += 1.5;
+    if (posY > maxY - edgeBuffer) velocityY -= 1.5;
+
+    noBtn.style.left = posX + "px";
+    noBtn.style.top = posY + "px";
 
     requestAnimationFrame(animate);
 }
-
 animate();
 
 function createHearts() {
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 70; i++) {
         const heart = document.createElement("div");
         heart.classList.add("heart");
         heart.innerText = "💖";
         heart.style.left = Math.random() * 100 + "vw";
         heart.style.animationDuration = (3 + Math.random() * 2) + "s";
         document.body.appendChild(heart);
+
         setTimeout(() => heart.remove(), 5000);
     }
 }
 
 yesBtn.addEventListener("click", () => {
-    document.querySelector(".container").style.display = "none";
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+    document.querySelector("h1").style.display = "none";
     successContainer.style.display = "block";
 
-    loveSong.play().catch(() => {});
+    loveSong.play();
 
     confetti({
-        particleCount: 250,
-        spread: 120,
+        particleCount: 300,
+        spread: 140,
         origin: { y: 0.6 }
     });
 
