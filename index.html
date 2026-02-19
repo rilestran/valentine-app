@@ -105,112 +105,96 @@ const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
 const successContainer = document.getElementById("successContainer");
 const loveSong = document.getElementById("loveSong");
+const title = document.querySelector("h1");
 
+// Mouse tracking
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
-
-// Start position
-let posX = window.innerWidth * 0.55;
-let posY = window.innerHeight * 0.5;
-
-// Velocity
-let velocityX = 0;
-let velocityY = 0;
-
-// Make it harder/impossible to click
-const SAFE_DISTANCE = 320;     // runs away sooner (bigger bubble)
-const MIN_PUSH = 2.0;          // minimum push even when barely inside bubble
-const MAX_SPEED = 22;          // top speed
-const FRICTION = 0.90;         // lower = more slippery/faster
-const EDGE_BUFFER = 90;        // keeps it away from edges
-const EDGE_FORCE = 0.9;        // steers away from edges
-const WIGGLE = 0.6;            // small randomness so it never settles
-const PREDICT_MS = 70;         // prediction horizon for cursor movement
-
-// Track mouse velocity for prediction
-let lastMouseX = mouseX, lastMouseY = mouseY;
-let mouseVX = 0, mouseVY = 0;
+let lastMouseX = mouseX;
+let lastMouseY = mouseY;
+let mouseVX = 0;
+let mouseVY = 0;
 
 document.addEventListener("mousemove", (e) => {
   mouseVX = e.clientX - lastMouseX;
   mouseVY = e.clientY - lastMouseY;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
-
   mouseX = e.clientX;
   mouseY = e.clientY;
 });
 
-// If the user somehow gets their cursor ON the button, instantly relocate it
-noBtn.addEventListener("mouseenter", () => {
-  const rect = noBtn.getBoundingClientRect();
-  const maxX = window.innerWidth - rect.width;
-  const maxY = window.innerHeight - rect.height;
+// Button physics
+let posX = window.innerWidth * 0.55;
+let posY = window.innerHeight * 0.5;
+let vx = 0;
+let vy = 0;
 
-  posX = Math.random() * (maxX - 2 * EDGE_BUFFER) + EDGE_BUFFER;
-  posY = Math.random() * (maxY - 2 * EDGE_BUFFER) + EDGE_BUFFER;
+// 🎯 Tuned settings (less extreme)
+const SAFE_DISTANCE = 260;   // reacts closer now
+const PREDICT_FRAMES = 3;
+const FRICTION = 0.90;       // smoother/slower
+const MAX_SPEED = 18;        // slower top speed
+const WIGGLE = 0.5;
 
-  velocityX += (Math.random() - 0.5) * 12;
-  velocityY += (Math.random() - 0.5) * 12;
-});
+// Smaller wall padding
+const EDGE_MARGIN = 60;      // less padding from edges
+const EDGE_STRENGTH = 4.5;
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
 }
 
 function animate() {
-  const rect = noBtn.getBoundingClientRect();
-  const w = rect.width;
-  const h = rect.height;
+  const r = noBtn.getBoundingClientRect();
+  const w = r.width;
+  const h = r.height;
 
-  // Predict where the mouse is headed (makes it harder to “fake out”)
-  const predictFactor = PREDICT_MS / 16; // approx frames
-  const targetMouseX = mouseX + mouseVX * predictFactor;
-  const targetMouseY = mouseY + mouseVY * predictFactor;
-
-  const centerX = posX + w / 2;
-  const centerY = posY + h / 2;
-
-  let dx = centerX - targetMouseX;
-  let dy = centerY - targetMouseY;
-  let dist = Math.hypot(dx, dy);
-
-  // MAIN REPULSION: accelerates away; stronger when closer
-  if (dist < SAFE_DISTANCE && dist > 0.0001) {
-    const force = (SAFE_DISTANCE - dist) / SAFE_DISTANCE; // 0..1
-    const accel = (MIN_PUSH + 10.0 * force * force);      // quadratic ramp
-    velocityX += (dx / dist) * accel;
-    velocityY += (dy / dist) * accel;
-  }
-
-  // EDGE STEERING (prevents corner traps): push inward before it hits edges
   const maxX = window.innerWidth - w;
   const maxY = window.innerHeight - h;
 
-  if (posX < EDGE_BUFFER) velocityX += EDGE_FORCE * (1 - posX / EDGE_BUFFER);
-  if (posX > maxX - EDGE_BUFFER) velocityX -= EDGE_FORCE * (1 - (maxX - posX) / EDGE_BUFFER);
-  if (posY < EDGE_BUFFER) velocityY += EDGE_FORCE * (1 - posY / EDGE_BUFFER);
-  if (posY > maxY - EDGE_BUFFER) velocityY -= EDGE_FORCE * (1 - (maxY - posY) / EDGE_BUFFER);
+  // Predict mouse slightly
+  const targetMouseX = mouseX + mouseVX * PREDICT_FRAMES;
+  const targetMouseY = mouseY + mouseVY * PREDICT_FRAMES;
 
-  // Tiny wiggle so it never settles into a stable spot
-  velocityX += (Math.random() - 0.5) * WIGGLE;
-  velocityY += (Math.random() - 0.5) * WIGGLE;
+  const cx = posX + w / 2;
+  const cy = posY + h / 2;
 
-  // Apply friction
-  velocityX *= FRICTION;
-  velocityY *= FRICTION;
+  let dx = cx - targetMouseX;
+  let dy = cy - targetMouseY;
+  let dist = Math.hypot(dx, dy);
 
-  // Cap speed (so it’s fast but not teleport-y)
-  const speed = Math.hypot(velocityX, velocityY);
-  if (speed > MAX_SPEED) {
-    velocityX = (velocityX / speed) * MAX_SPEED;
-    velocityY = (velocityY / speed) * MAX_SPEED;
+  if (dist < SAFE_DISTANCE && dist > 0.0001) {
+    const t = (SAFE_DISTANCE - dist) / SAFE_DISTANCE;
+    const accel = 2.0 + 8.0 * t * t; // softer acceleration
+    vx += (dx / dist) * accel;
+    vy += (dy / dist) * accel;
   }
 
-  posX += velocityX;
-  posY += velocityY;
+  // Light edge repulsion (prevents corner sticking)
+  if (posX < EDGE_MARGIN) vx += EDGE_STRENGTH;
+  if (posX > maxX - EDGE_MARGIN) vx -= EDGE_STRENGTH;
+  if (posY < EDGE_MARGIN) vy += EDGE_STRENGTH;
+  if (posY > maxY - EDGE_MARGIN) vy -= EDGE_STRENGTH;
 
-  // Hard clamp inside bounds (as a final safety)
+  // Small randomness
+  vx += (Math.random() - 0.5) * WIGGLE;
+  vy += (Math.random() - 0.5) * WIGGLE;
+
+  // Apply friction
+  vx *= FRICTION;
+  vy *= FRICTION;
+
+  // Cap speed
+  const speed = Math.hypot(vx, vy);
+  if (speed > MAX_SPEED) {
+    vx = (vx / speed) * MAX_SPEED;
+    vy = (vy / speed) * MAX_SPEED;
+  }
+
+  posX += vx;
+  posY += vy;
+
   posX = clamp(posX, 0, maxX);
   posY = clamp(posY, 0, maxY);
 
@@ -220,32 +204,38 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-animate();
+requestAnimationFrame(animate);
 
+// If cursor actually touches it, quick hop
+noBtn.addEventListener("mouseenter", () => {
+  vx += (Math.random() - 0.5) * 12;
+  vy += (Math.random() - 0.5) * 12;
+});
+
+// Hearts + celebration
 function createHearts() {
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < 60; i++) {
     const heart = document.createElement("div");
     heart.classList.add("heart");
     heart.innerText = "💖";
     heart.style.left = Math.random() * 100 + "vw";
     heart.style.animationDuration = (3 + Math.random() * 2) + "s";
     document.body.appendChild(heart);
-    setTimeout(() => heart.remove(), 5000);
+    setTimeout(() => heart.remove(), 5200);
   }
 }
 
 yesBtn.addEventListener("click", () => {
   yesBtn.style.display = "none";
   noBtn.style.display = "none";
-  document.querySelector("h1").style.display = "none";
+  title.style.display = "none";
   successContainer.style.display = "block";
 
-  // Start music on user interaction (required by browsers)
-  loveSong.play().catch(() => { /* ignore autoplay blocks */ });
+  loveSong.play().catch(() => {});
 
   confetti({
-    particleCount: 300,
-    spread: 140,
+    particleCount: 250,
+    spread: 130,
     origin: { y: 0.6 }
   });
 
