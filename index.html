@@ -1,148 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Be My Valentine?</title>
 
 <style>
-  body {
+body {
     margin: 0;
     height: 100vh;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     font-family: Arial, sans-serif;
     overflow: hidden;
     position: relative;
-  }
+}
 
-  h1 {
+h1 {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 14%;
+    top: 20%;
     font-size: 2.5rem;
     color: white;
-    margin: 0;
-    padding: 0 16px;
-    box-sizing: border-box;
-    z-index: 3;
-  }
+}
 
-  /* 5 Cats row */
-  .cat-container {
-    position: absolute;
-    top: 28%;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: min(920px, 92vw);
-    z-index: 3; /* make sure they’re visible */
-    pointer-events: none;
-  }
-
-  .cat {
-    width: 140px;
-    height: 140px;
-    border-radius: 16px;
-    object-fit: cover;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    background: rgba(255,255,255,0.25);
-  }
-
-  /* Center the YES/NO area */
-  .button-container {
-    position: absolute;
-    top: 70%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    gap: 24px;
-    align-items: center;
-    justify-content: center;
-    z-index: 4;
-  }
-
-  button {
+button {
     padding: 15px 30px;
     font-size: 1.2rem;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    user-select: none;
-  }
+    position: absolute;
+    z-index: 2;
+}
 
-  #yesBtn {
+#yesBtn {
     background-color: #ff4d6d;
     color: white;
-  }
+    left: 45%;
+    top: 50%;
+}
 
-  /* IMPORTANT: make NO fixed so left/top match viewport coords */
-  #noBtn {
+#noBtn {
     background-color: white;
     color: #ff4d6d;
-    position: fixed;   /* <-- key fix */
-    left: 0;
-    top: 0;
-    z-index: 5;
-  }
+    left: 55%;
+    top: 50%;
+}
 
-  .success-container {
+.success-container {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 38%;
+    top: 35%;
     display: none;
-    z-index: 6;
-  }
+    z-index: 2;
+}
 
-  .success-message {
+.success-message {
     font-size: 2rem;
     color: white;
-    margin: 0 16px 20px;
-  }
+    margin-bottom: 20px;
+}
 
-  .heart {
+.success-container img {
+    width: 280px;
+    border-radius: 20px;
+}
+
+.heart {
     position: absolute;
     font-size: 24px;
     animation: fall linear forwards;
-    z-index: 2;
-  }
+}
 
-  @keyframes fall {
+@keyframes fall {
     to {
-      transform: translateY(100vh);
-      opacity: 0;
+        transform: translateY(100vh);
+        opacity: 0;
     }
-  }
+}
 </style>
 </head>
 
 <body>
 
-<h1>Jennifer, Will you be my Valentine? 💖</h1>
-
-<!-- 5 Dancing Cats -->
-<div class="cat-container" aria-hidden="true">
-  <img class="cat" alt="Dancing cat 1">
-  <img class="cat" alt="Dancing cat 2">
-  <img class="cat" alt="Dancing cat 3">
-  <img class="cat" alt="Dancing cat 4">
-  <img class="cat" alt="Dancing cat 5">
-</div>
-
-<div class="button-container" id="buttonContainer">
-  <button id="yesBtn">Yes</button>
-  <!-- NO button is positioned via JS (fixed), but we keep it in DOM here -->
-  <button id="noBtn">No</button>
-</div>
+<h1>Jennifer, will you be my Valentine? 💖</h1>
+<button id="yesBtn">Yes</button>
+<button id="noBtn">No</button>
 
 <div class="success-container" id="successContainer">
-  <div class="success-message">
-    Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
-  </div>
+    <div class="success-message">
+        Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
+    </div>
+   <img src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Dancing Cat">
 </div>
 
 <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
@@ -150,157 +101,146 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-  const noBtn = document.getElementById("noBtn");
-  const yesBtn = document.getElementById("yesBtn");
-  const buttonContainer = document.getElementById("buttonContainer");
-  const successContainer = document.getElementById("successContainer");
-  const loveSong = document.getElementById("loveSong");
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const successContainer = document.getElementById("successContainer");
+const loveSong = document.getElementById("loveSong");
+const title = document.querySelector("h1");
 
-  // --- Cat GIF loading with fallbacks ---
-  const catImgs = Array.from(document.querySelectorAll(".cat"));
+// Mouse tracking
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let lastMouseX = mouseX;
+let lastMouseY = mouseY;
+let mouseVX = 0;
+let mouseVY = 0;
 
-  // Try several hosts (some networks block some domains)
-  const gifSources = [
-    "https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif",
-    "https://media.tenor.com/5WZ0GfQ0a1AAAAAC/cat-dance.gif",
-    "https://i.gifer.com/origin/2b/2b8f4c8a8c9b0d2e7c6b8b2e5c4b6f4b.gif"
-  ];
+document.addEventListener("mousemove", (e) => {
+  mouseVX = e.clientX - lastMouseX;
+  mouseVY = e.clientY - lastMouseY;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
 
-  function setCatSource(img, idx) {
-    let attempt = 0;
+// Button physics
+let posX = window.innerWidth * 0.55;
+let posY = window.innerHeight * 0.5;
+let vx = 0;
+let vy = 0;
 
-    function tryNext() {
-      if (attempt >= gifSources.length) {
-        // final fallback: show an emoji tile if all GIFs fail
-        img.replaceWith(makeEmojiCat(idx));
-        return;
-      }
-      img.src = gifSources[attempt] + (attempt === 0 ? "" : ("?v=" + Date.now()));
-      attempt++;
-    }
+// 🎯 Tuned settings (less extreme)
+const SAFE_DISTANCE = 260;   // reacts closer now
+const PREDICT_FRAMES = 3;
+const FRICTION = 0.90;       // smoother/slower
+const MAX_SPEED = 18;        // slower top speed
+const WIGGLE = 0.5;
 
-    img.onerror = tryNext;
-    tryNext();
+// Smaller wall padding
+const EDGE_MARGIN = 60;      // less padding from edges
+const EDGE_STRENGTH = 4.5;
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function animate() {
+  const r = noBtn.getBoundingClientRect();
+  const w = r.width;
+  const h = r.height;
+
+  const maxX = window.innerWidth - w;
+  const maxY = window.innerHeight - h;
+
+  // Predict mouse slightly
+  const targetMouseX = mouseX + mouseVX * PREDICT_FRAMES;
+  const targetMouseY = mouseY + mouseVY * PREDICT_FRAMES;
+
+  const cx = posX + w / 2;
+  const cy = posY + h / 2;
+
+  let dx = cx - targetMouseX;
+  let dy = cy - targetMouseY;
+  let dist = Math.hypot(dx, dy);
+
+  if (dist < SAFE_DISTANCE && dist > 0.0001) {
+    const t = (SAFE_DISTANCE - dist) / SAFE_DISTANCE;
+    const accel = 2.0 + 8.0 * t * t; // softer acceleration
+    vx += (dx / dist) * accel;
+    vy += (dy / dist) * accel;
   }
 
-  function makeEmojiCat(idx) {
-    const div = document.createElement("div");
-    div.className = "cat";
-    div.style.display = "grid";
-    div.style.placeItems = "center";
-    div.style.fontSize = "54px";
-    div.style.color = "white";
-    div.style.background = "rgba(255,255,255,0.18)";
-    div.textContent = "🐱💃";
-    div.setAttribute("aria-label", "Dancing cat fallback " + (idx + 1));
-    return div;
+  // Light edge repulsion (prevents corner sticking)
+  if (posX < EDGE_MARGIN) vx += EDGE_STRENGTH;
+  if (posX > maxX - EDGE_MARGIN) vx -= EDGE_STRENGTH;
+  if (posY < EDGE_MARGIN) vy += EDGE_STRENGTH;
+  if (posY > maxY - EDGE_MARGIN) vy -= EDGE_STRENGTH;
+
+  // Small randomness
+  vx += (Math.random() - 0.5) * WIGGLE;
+  vy += (Math.random() - 0.5) * WIGGLE;
+
+  // Apply friction
+  vx *= FRICTION;
+  vy *= FRICTION;
+
+  // Cap speed
+  const speed = Math.hypot(vx, vy);
+  if (speed > MAX_SPEED) {
+    vx = (vx / speed) * MAX_SPEED;
+    vy = (vy / speed) * MAX_SPEED;
   }
 
-  catImgs.forEach(setCatSource);
+  posX += vx;
+  posY += vy;
 
-  // --- Mouse tracking ---
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
+  posX = clamp(posX, 0, maxX);
+  posY = clamp(posY, 0, maxY);
 
-  document.addEventListener("mousemove", (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+  noBtn.style.left = posX + "px";
+  noBtn.style.top = posY + "px";
+
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
+
+// If cursor actually touches it, quick hop
+noBtn.addEventListener("mouseenter", () => {
+  vx += (Math.random() - 0.5) * 12;
+  vy += (Math.random() - 0.5) * 12;
+});
+
+// Hearts + celebration
+function createHearts() {
+  for (let i = 0; i < 60; i++) {
+    const heart = document.createElement("div");
+    heart.classList.add("heart");
+    heart.innerText = "💖";
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.animationDuration = (3 + Math.random() * 2) + "s";
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 5200);
+  }
+}
+
+yesBtn.addEventListener("click", () => {
+  yesBtn.style.display = "none";
+  noBtn.style.display = "none";
+  title.style.display = "none";
+  successContainer.style.display = "block";
+
+  loveSong.play().catch(() => {});
+
+  confetti({
+    particleCount: 250,
+    spread: 130,
+    origin: { y: 0.6 }
   });
 
-  // --- Place NO button initially next to YES (using viewport coords) ---
-  let posX = 0;
-  let posY = 0;
-  let velocityX = 0;
-  let velocityY = 0;
-
-  function placeNoNearYes() {
-    const yesRect = yesBtn.getBoundingClientRect();
-    const noRect = noBtn.getBoundingClientRect();
-
-    // Put NO to the right of YES, centered vertically
-    posX = yesRect.right + 24;
-    posY = yesRect.top + (yesRect.height / 2) - (noRect.height / 2);
-
-    // Clamp within viewport
-    posX = Math.max(0, Math.min(window.innerWidth - noRect.width, posX));
-    posY = Math.max(0, Math.min(window.innerHeight - noRect.height, posY));
-
-    noBtn.style.left = posX + "px";
-    noBtn.style.top = posY + "px";
-  }
-
-  // Wait a tick so layout is ready
-  window.addEventListener("load", placeNoNearYes);
-  window.addEventListener("resize", placeNoNearYes);
-
-  // --- Runaway animation ---
-  const safeDistance = 100; // ✅ activation distance requested
-
-  function animate() {
-    const rect = noBtn.getBoundingClientRect();
-    const centerX = posX + rect.width / 2;
-    const centerY = posY + rect.height / 2;
-
-    const dx = centerX - mouseX;
-    const dy = centerY - mouseY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < safeDistance && distance > 0) {
-      const force = (safeDistance - distance) / safeDistance;
-      const accel = 6 * force; // snappy but controllable
-      velocityX += (dx / distance) * accel;
-      velocityY += (dy / distance) * accel;
-    }
-
-    // friction
-    velocityX *= 0.88;
-    velocityY *= 0.88;
-
-    posX += velocityX;
-    posY += velocityY;
-
-    const maxX = window.innerWidth - rect.width;
-    const maxY = window.innerHeight - rect.height;
-
-    // Clamp so it never leaves screen
-    posX = Math.max(0, Math.min(maxX, posX));
-    posY = Math.max(0, Math.min(maxY, posY));
-
-    noBtn.style.left = posX + "px";
-    noBtn.style.top = posY + "px";
-
-    requestAnimationFrame(animate);
-  }
-  animate();
-
-  // --- Hearts & YES handler ---
-  function createHearts() {
-    for (let i = 0; i < 70; i++) {
-      const heart = document.createElement("div");
-      heart.classList.add("heart");
-      heart.innerText = "💖";
-      heart.style.left = Math.random() * 100 + "vw";
-      heart.style.animationDuration = (3 + Math.random() * 2) + "s";
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 5000);
-    }
-  }
-
-  yesBtn.addEventListener("click", () => {
-    buttonContainer.style.display = "none";
-    document.querySelector("h1").style.display = "none";
-    successContainer.style.display = "block";
-
-    loveSong.play().catch(() => {});
-
-    confetti({
-      particleCount: 300,
-      spread: 140,
-      origin: { y: 0.6 }
-    });
-
-    createHearts();
-  });
+  createHearts();
+});
 </script>
 
 </body>
