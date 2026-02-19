@@ -9,22 +9,19 @@
 body {
     margin: 0;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     font-family: Arial, sans-serif;
     overflow: hidden;
-}
-
-.container {
-    text-align: center;
+    position: relative;
 }
 
 h1 {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 20%;
     font-size: 2.5rem;
     color: white;
-    margin-bottom: 60px;
 }
 
 button {
@@ -40,18 +37,21 @@ button {
     background-color: #ff4d6d;
     color: white;
     left: 45%;
-    top: 55%;
+    top: 50%;
 }
 
 #noBtn {
     background-color: white;
     color: #ff4d6d;
     left: 55%;
-    top: 55%;
+    top: 50%;
 }
 
 .message {
-    margin-top: 120px;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 65%;
     font-size: 2rem;
     color: white;
     display: none;
@@ -71,33 +71,61 @@ const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
 const message = document.getElementById("loveMessage");
 
-// Move away from cursor
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+
+let posX = window.innerWidth * 0.55;
+let posY = window.innerHeight * 0.5;
+
+let velocityX = 0;
+let velocityY = 0;
+
 document.addEventListener("mousemove", (e) => {
-    const rect = noBtn.getBoundingClientRect();
-    const buttonX = rect.left + rect.width / 2;
-    const buttonY = rect.top + rect.height / 2;
-
-    const dx = buttonX - e.clientX;
-    const dy = buttonY - e.clientY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < 150) { // sensitivity range
-        const moveX = (dx / distance) * 100;
-        const moveY = (dy / distance) * 100;
-
-        let newLeft = rect.left + moveX;
-        let newTop = rect.top + moveY;
-
-        // Keep button inside screen
-        newLeft = Math.max(0, Math.min(window.innerWidth - rect.width, newLeft));
-        newTop = Math.max(0, Math.min(window.innerHeight - rect.height, newTop));
-
-        noBtn.style.left = newLeft + "px";
-        noBtn.style.top = newTop + "px";
-    }
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 });
 
-// Yes button click
+function animate() {
+    const rect = noBtn.getBoundingClientRect();
+    const centerX = posX + rect.width / 2;
+    const centerY = posY + rect.height / 2;
+
+    const dx = centerX - mouseX;
+    const dy = centerY - mouseY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    const safeDistance = 200;
+
+    if (distance < safeDistance) {
+        const force = (safeDistance - distance) / safeDistance;
+        const accel = 1.5 * force; // acceleration increases closer you get
+
+        velocityX += (dx / distance) * accel;
+        velocityY += (dy / distance) * accel;
+    }
+
+    // friction for smooth slow-down
+    velocityX *= 0.92;
+    velocityY *= 0.92;
+
+    posX += velocityX;
+    posY += velocityY;
+
+    // Keep inside screen
+    const maxX = window.innerWidth - rect.width;
+    const maxY = window.innerHeight - rect.height;
+
+    posX = Math.max(0, Math.min(maxX, posX));
+    posY = Math.max(0, Math.min(maxY, posY));
+
+    noBtn.style.left = posX + "px";
+    noBtn.style.top = posY + "px";
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
 yesBtn.addEventListener("click", () => {
     message.style.display = "block";
     yesBtn.style.display = "none";
