@@ -130,16 +130,18 @@ function animate() {
     const distance = Math.sqrt(dx * dx + dy * dy);
     const safeDistance = 220;
 
+    // Accelerate away from mouse
     if (distance < safeDistance && distance > 0) {
         const force = (safeDistance - distance) / safeDistance;
-        const accel = 3.5 * force;  // Faster movement
+        const accel = 3.5 * force;
 
         velocityX += (dx / distance) * accel;
         velocityY += (dy / distance) * accel;
     }
 
-    velocityX *= 0.90;
-    velocityY *= 0.90;
+    // Apply friction
+    velocityX *= 0.92;
+    velocityY *= 0.92;
 
     posX += velocityX;
     posY += velocityY;
@@ -147,8 +149,32 @@ function animate() {
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
 
-    posX = Math.max(0, Math.min(maxX, posX));
-    posY = Math.max(0, Math.min(maxY, posY));
+    // Bounce off left/right walls
+    if (posX <= 0) {
+        posX = 0;
+        velocityX = Math.abs(velocityX) + 2;
+    }
+    if (posX >= maxX) {
+        posX = maxX;
+        velocityX = -Math.abs(velocityX) - 2;
+    }
+
+    // Bounce off top/bottom walls
+    if (posY <= 0) {
+        posY = 0;
+        velocityY = Math.abs(velocityY) + 2;
+    }
+    if (posY >= maxY) {
+        posY = maxY;
+        velocityY = -Math.abs(velocityY) - 2;
+    }
+
+    // Extra anti-corner boost
+    const edgeBuffer = 40;
+    if (posX < edgeBuffer) velocityX += 1.5;
+    if (posX > maxX - edgeBuffer) velocityX -= 1.5;
+    if (posY < edgeBuffer) velocityY += 1.5;
+    if (posY > maxY - edgeBuffer) velocityY -= 1.5;
 
     noBtn.style.left = posX + "px";
     noBtn.style.top = posY + "px";
