@@ -15,13 +15,43 @@ body {
     position: relative;
 }
 
+/* Title */
 h1 {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 20%;
+    top: 15%;
     font-size: 2.5rem;
     color: white;
+    margin: 0;
+    z-index: 2;
+}
+
+/* Cat Grid */
+.cat-container {
+    position: absolute;
+    top: 28%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 1;
+}
+
+.cat-container img {
+    width: 140px;
+    border-radius: 15px;
+}
+
+/* Centered Button Container */
+.button-container {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 25px;
+    z-index: 2;
 }
 
 button {
@@ -30,29 +60,25 @@ button {
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    position: absolute;
-    z-index: 2;
 }
 
 #yesBtn {
     background-color: #ff4d6d;
     color: white;
-    left: 45%;
-    top: 50%;
 }
 
 #noBtn {
     background-color: white;
     color: #ff4d6d;
-    left: 55%;
-    top: 50%;
+    position: absolute;
 }
 
+/* Success Message */
 .success-container {
     position: absolute;
     width: 100%;
     text-align: center;
-    top: 35%;
+    top: 40%;
     display: none;
     z-index: 2;
 }
@@ -63,11 +89,7 @@ button {
     margin-bottom: 20px;
 }
 
-.success-container img {
-    width: 280px;
-    border-radius: 20px;
-}
-
+/* Floating Hearts */
 .heart {
     position: absolute;
     font-size: 24px;
@@ -86,14 +108,25 @@ button {
 <body>
 
 <h1>Jennifer, Will you be my Valentine? 💖</h1>
-<button id="yesBtn">Yes</button>
-<button id="noBtn">No</button>
+
+<!-- 5 Dancing Cats -->
+<div class="cat-container">
+    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
+    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
+    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
+    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
+    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif">
+</div>
+
+<div class="button-container" id="buttonContainer">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+</div>
 
 <div class="success-container" id="successContainer">
     <div class="success-message">
         Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
     </div>
-    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif" alt="Silly Dancing Cat">
 </div>
 
 <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
@@ -103,17 +136,23 @@ button {
 <script>
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
+const buttonContainer = document.getElementById("buttonContainer");
 const successContainer = document.getElementById("successContainer");
 const loveSong = document.getElementById("loveSong");
 
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
 
-let posX = window.innerWidth * 0.55;
-let posY = window.innerHeight * 0.5;
+// Start NO button near center
+let rect = buttonContainer.getBoundingClientRect();
+let posX = rect.left + 120;
+let posY = rect.top;
 
 let velocityX = 0;
 let velocityY = 0;
+
+noBtn.style.left = posX + "px";
+noBtn.style.top = posY + "px";
 
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
@@ -128,11 +167,12 @@ function animate() {
     const dx = centerX - mouseX;
     const dy = centerY - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    const safeDistance = 220;
+
+    const safeDistance = 100; // 🔥 ACTIVATION DISTANCE SET TO 100
 
     if (distance < safeDistance && distance > 0) {
         const force = (safeDistance - distance) / safeDistance;
-        const accel = 3.5 * force;  // Faster movement
+        const accel = 5 * force; // slightly snappier
 
         velocityX += (dx / distance) * accel;
         velocityY += (dy / distance) * accel;
@@ -171,12 +211,11 @@ function createHearts() {
 }
 
 yesBtn.addEventListener("click", () => {
-    yesBtn.style.display = "none";
-    noBtn.style.display = "none";
+    buttonContainer.style.display = "none";
     document.querySelector("h1").style.display = "none";
     successContainer.style.display = "block";
 
-    loveSong.play();
+    loveSong.play().catch(() => {});
 
     confetti({
         particleCount: 300,
