@@ -37,14 +37,14 @@ button {
 #yesBtn {
     background-color: #ff4d6d;
     color: white;
-    left: 48%;
+    left: 45%;
     top: 50%;
 }
 
 #noBtn {
     background-color: white;
     color: #ff4d6d;
-    left: 52%;
+    left: 55%;
     top: 50%;
 }
 
@@ -85,7 +85,7 @@ button {
 
 <body>
 
-<h1>Jennifer, will you be my Valentine? 💖</h1>
+<h1>Jennifer, Will you be my Valentine? 💖</h1>
 <button id="yesBtn">Yes</button>
 <button id="noBtn">No</button>
 
@@ -93,7 +93,7 @@ button {
     <div class="success-message">
         Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
     </div>
-   <img src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Dancing Cat">
+    <img src="https://media.tenor.com/8xJbZ0Wz9VgAAAAC/silly-cat-dance.gif" alt="Silly Dancing Cat">
 </div>
 
 <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
@@ -109,13 +109,11 @@ const loveSong = document.getElementById("loveSong");
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
 
-let posX = window.innerWidth * 0.52;
+let posX = window.innerWidth * 0.55;
 let posY = window.innerHeight * 0.5;
 
 let velocityX = 0;
 let velocityY = 0;
-
-let isActivated = false;
 
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
@@ -130,24 +128,18 @@ function animate() {
     const dx = centerX - mouseX;
     const dy = centerY - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
-
-    const activationDistance = 100;  // extremely close trigger
     const safeDistance = 220;
 
-    if (distance < activationDistance) {
-        isActivated = true;
-    }
-
-    if (isActivated && distance > 0) {
+    if (distance < safeDistance && distance > 0) {
         const force = (safeDistance - distance) / safeDistance;
-        const accel = 2.6 * force;   // slowed from 3.5
+        const accel = 3.5 * force;  // Faster movement
 
         velocityX += (dx / distance) * accel;
         velocityY += (dy / distance) * accel;
     }
 
-    velocityX *= 0.94;   // more friction = slower
-    velocityY *= 0.94;
+    velocityX *= 0.90;
+    velocityY *= 0.90;
 
     posX += velocityX;
     posY += velocityY;
@@ -155,23 +147,8 @@ function animate() {
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
 
-    if (posX <= 0) {
-        posX = 0;
-        velocityX = Math.abs(velocityX);
-    }
-    if (posX >= maxX) {
-        posX = maxX;
-        velocityX = -Math.abs(velocityX);
-    }
-
-    if (posY <= 0) {
-        posY = 0;
-        velocityY = Math.abs(velocityY);
-    }
-    if (posY >= maxY) {
-        posY = maxY;
-        velocityY = -Math.abs(velocityY);
-    }
+    posX = Math.max(0, Math.min(maxX, posX));
+    posY = Math.max(0, Math.min(maxY, posY));
 
     noBtn.style.left = posX + "px";
     noBtn.style.top = posY + "px";
