@@ -3,7 +3,364 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Be My Valentine?</title>
+<title>Subfocus tickets</t<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Subfocus tickets</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .page {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  h1 {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 20%;
+    font-size: 2.5rem;
+    color: white;
+    margin: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
+  button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    position: absolute;
+    z-index: 2;
+    touch-action: none;
+  }
+
+  #yesBtn {
+    background-color: #ff4d6d;
+    color: white;
+    left: 42%;
+    top: 50%;
+  }
+
+  #noBtn {
+    background-color: white;
+    color: #ff4d6d;
+    left: 52%;
+    top: 50%;
+  }
+
+  .success-container {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 35%;
+    display: none;
+    z-index: 2;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
+  .success-message {
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 20px;
+  }
+
+  .success-container img {
+    width: 280px;
+    border-radius: 20px;
+    max-width: 85vw;
+  }
+
+  /* Scroll indicator now on page 1 */
+  .scroll-indicator {
+    margin-top: 18px;
+    color: white;
+  }
+
+  .scroll-text {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .scroll-arrow {
+    font-size: 2rem;
+    animation: bounce 1.4s infinite;
+    line-height: 1;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  .heart {
+    position: absolute;
+    font-size: 24px;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+  }
+
+  /* PAGE 2 */
+  #page2 {
+    display: none;
+    padding: 40px 16px 60px;
+    box-sizing: border-box;
+  }
+
+  .card-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card-image {
+    width: min(1100px, 95vw);
+    height: auto;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+    background: white;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<section class="page" id="page1">
+  <h1>Jennifer, will you be my Valentine? 💖</h1>
+  <button id="yesBtn">Yes</button>
+  <button id="noBtn">No</button>
+
+  <div class="success-container" id="successContainer">
+    <div class="success-message">
+      Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
+    </div>
+
+    <img src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Dancing Cat" />
+
+    <!-- Scroll Down Indicator (NOW HERE) -->
+    <div class="scroll-indicator">
+      <div class="scroll-text">Scroll down</div>
+      <div class="scroll-arrow">↓</div>
+    </div>
+
+  </div>
+
+  <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page" id="page2">
+  <div class="card-wrap">
+    <img class="card-image" src="valentine-card.png" alt="Valentine card" />
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+  const noBtn = document.getElementById("noBtn");
+  const yesBtn = document.getElementById("yesBtn");
+  const successContainer = document.getElementById("successContainer");
+  const loveSong = document.getElementById("loveSong");
+  const title = document.querySelector("h1");
+  const page2 = document.getElementById("page2");
+
+  let armed = false;
+
+  let mouseX = -99999;
+  let mouseY = -99999;
+  let lastMouseX = mouseX;
+  let lastMouseY = mouseY;
+  let mouseVX = 0;
+  let mouseVY = 0;
+
+  function updatePointer(x, y) {
+    armed = true;
+
+    if (lastMouseX < -90000) {
+      lastMouseX = x;
+      lastMouseY = y;
+      mouseVX = 0;
+      mouseVY = 0;
+    } else {
+      mouseVX = x - lastMouseX;
+      mouseVY = y - lastMouseY;
+      lastMouseX = x;
+      lastMouseY = y;
+    }
+
+    mouseX = x;
+    mouseY = y;
+  }
+
+  document.addEventListener("mousemove", (e) => {
+    updatePointer(e.clientX, e.clientY);
+  });
+
+  document.addEventListener("touchstart", (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    updatePointer(t.clientX, t.clientY);
+  }, { passive: true });
+
+  document.addEventListener("touchmove", (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    updatePointer(t.clientX, t.clientY);
+  }, { passive: true });
+
+  let vx = 0;
+  let vy = 0;
+
+  let posX, posY;
+  function syncStartFromCSS() {
+    const rect = noBtn.getBoundingClientRect();
+    posX = rect.left;
+    posY = rect.top;
+  }
+  window.addEventListener("load", syncStartFromCSS);
+  window.addEventListener("resize", () => {
+    syncStartFromCSS();
+    vx = 0; vy = 0;
+  });
+
+  const TRIGGER_DISTANCE = 130;
+  const PREDICT_FRAMES = 3;
+  const FRICTION = 0.88;
+  const MAX_SPEED = 18;
+  const EDGE_MARGIN = 60;
+  const EDGE_STRENGTH = 4.5;
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function animate() {
+    const r = noBtn.getBoundingClientRect();
+    const w = r.width;
+    const h = r.height;
+
+    const maxX = window.innerWidth - w;
+    const maxY = window.innerHeight - h;
+
+    if (posX === undefined || posY === undefined) {
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    if (!armed) {
+      vx = 0; vy = 0;
+      posX = clamp(posX, 0, maxX);
+      posY = clamp(posY, 0, maxY);
+      noBtn.style.left = posX + "px";
+      noBtn.style.top = posY + "px";
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    const targetMouseX = mouseX + mouseVX * PREDICT_FRAMES;
+    const targetMouseY = mouseY + mouseVY * PREDICT_FRAMES;
+
+    const cx = posX + w / 2;
+    const cy = posY + h / 2;
+
+    const dx = cx - targetMouseX;
+    const dy = cy - targetMouseY;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < TRIGGER_DISTANCE && dist > 0.0001) {
+      const t = (TRIGGER_DISTANCE - dist) / TRIGGER_DISTANCE;
+      const accel = 3.0 + 14.0 * t * t;
+      vx += (dx / dist) * accel;
+      vy += (dy / dist) * accel;
+    }
+
+    if (posX < EDGE_MARGIN) vx += EDGE_STRENGTH;
+    if (posX > maxX - EDGE_MARGIN) vx -= EDGE_STRENGTH;
+    if (posY < EDGE_MARGIN) vy += EDGE_STRENGTH;
+    if (posY > maxY - EDGE_MARGIN) vy -= EDGE_STRENGTH;
+
+    vx *= FRICTION;
+    vy *= FRICTION;
+
+    const speed = Math.hypot(vx, vy);
+    if (speed > MAX_SPEED) {
+      vx = (vx / speed) * MAX_SPEED;
+      vy = (vy / speed) * MAX_SPEED;
+    }
+
+    posX += vx;
+    posY += vy;
+
+    posX = clamp(posX, 0, maxX);
+    posY = clamp(posY, 0, maxY);
+
+    noBtn.style.left = posX + "px";
+    noBtn.style.top = posY + "px";
+
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  function createHearts() {
+    for (let i = 0; i < 60; i++) {
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.innerText = "💖";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = (3 + Math.random() * 2) + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 5200);
+    }
+  }
+
+  yesBtn.addEventListener("click", () => {
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+    title.style.display = "none";
+    successContainer.style.display = "block";
+
+    loveSong.play().catch(() => {});
+
+    confetti({
+      particleCount: 250,
+      spread: 130,
+      origin: { y: 0.6 }
+    });
+
+    createHearts();
+
+    page2.style.display = "block";
+  });
+</script>
+
+</body>
+</html>itle>
 
 <style>
   body {
