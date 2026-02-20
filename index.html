@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Subfocus tickets</t<!DOCTYPE html>
+<meta charset="UTF-8" <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Subfocus tickets</title>
+<title>Moshtix</title>
 
 <style>
   body {
@@ -360,7 +358,9 @@
 </script>
 
 </body>
-</html>itle>
+</html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Be My Valentine?</title>
 
 <style>
   body {
@@ -372,7 +372,6 @@
     position: relative;
   }
 
-  /* --- Page layout --- */
   .page {
     min-height: 100vh;
     position: relative;
@@ -399,10 +398,9 @@
     cursor: pointer;
     position: absolute;
     z-index: 2;
-    touch-action: none; /* helps touch accuracy */
+    touch-action: none;
   }
 
-  /* Slightly more centered towards the left (tweak these if you want) */
   #yesBtn {
     background-color: #ff4d6d;
     color: white;
@@ -440,6 +438,30 @@
     max-width: 85vw;
   }
 
+  /* Scroll indicator now on page 1 */
+  .scroll-indicator {
+    margin-top: 18px;
+    color: white;
+  }
+
+  .scroll-text {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .scroll-arrow {
+    font-size: 2rem;
+    animation: bounce 1.4s infinite;
+    line-height: 1;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
   .heart {
     position: absolute;
     font-size: 24px;
@@ -453,13 +475,11 @@
     }
   }
 
-  /* --- Page 2 (the card) --- */
+  /* PAGE 2 */
   #page2 {
-    display: none;            /* hidden until YES */
-    background: #ffffff00;    /* transparent over gradient */
+    display: none;
     padding: 40px 16px 60px;
     box-sizing: border-box;
-    overflow: visible;
   }
 
   .card-wrap {
@@ -476,36 +496,6 @@
     box-shadow: 0 18px 50px rgba(0,0,0,0.18);
     background: white;
   }
-
-  /* Scroll indicator */
-  .scroll-indicator {
-    text-align: center;
-    margin: 30px 0 26px;
-    color: white;
-  }
-
-  .scroll-text {
-    font-size: 1.3rem;
-    margin-bottom: 8px;
-    font-weight: bold;
-    letter-spacing: 1px;
-  }
-
-  .scroll-arrow {
-    font-size: 2rem;
-    animation: bounce 1.4s infinite;
-    line-height: 1;
-  }
-
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(8px); }
-  }
-
-  /* If someone prints it, this becomes the “next page” */
-  @media print {
-    #page2 { display: block; page-break-before: always; }
-  }
 </style>
 </head>
 
@@ -521,21 +511,23 @@
     <div class="success-message">
       Knew you were gonna say YES! HEHEHE YAY 💕 I love you!!!
     </div>
+
     <img src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Dancing Cat" />
+
+    <!-- Scroll Down Indicator (NOW HERE) -->
+    <div class="scroll-indicator">
+      <div class="scroll-text">Scroll down</div>
+      <div class="scroll-arrow">↓</div>
+    </div>
+
   </div>
 
   <audio id="loveSong" src="George_Micheal_-_Careless_Whisper_(mp3.pm).mp3"></audio>
 </section>
 
-<!-- PAGE 2 (YOUR CARD IMAGE) -->
+<!-- PAGE 2 -->
 <section class="page" id="page2">
-  <div class="scroll-indicator">
-    <div class="scroll-text">Scroll down</div>
-    <div class="scroll-arrow">↓</div>
-  </div>
-
   <div class="card-wrap">
-    <!-- Put your PNG in the same folder and name it valentine-card.png -->
     <img class="card-image" src="valentine-card.png" alt="Valentine card" />
   </div>
 </section>
@@ -550,10 +542,8 @@
   const title = document.querySelector("h1");
   const page2 = document.getElementById("page2");
 
-  // ✅ Arm the movement only after the user interacts (mouse OR touch)
   let armed = false;
 
-  // Pointer tracking (works for mouse + touch)
   let mouseX = -99999;
   let mouseY = -99999;
   let lastMouseX = mouseX;
@@ -564,7 +554,6 @@
   function updatePointer(x, y) {
     armed = true;
 
-    // first movement: reset velocity cleanly
     if (lastMouseX < -90000) {
       lastMouseX = x;
       lastMouseY = y;
@@ -581,12 +570,10 @@
     mouseY = y;
   }
 
-  // Mouse support
   document.addEventListener("mousemove", (e) => {
     updatePointer(e.clientX, e.clientY);
   });
 
-  // ✅ Touch support (mobile/tablet)
   document.addEventListener("touchstart", (e) => {
     const t = e.touches[0];
     if (!t) return;
@@ -599,11 +586,9 @@
     updatePointer(t.clientX, t.clientY);
   }, { passive: true });
 
-  // Button physics
   let vx = 0;
   let vy = 0;
 
-  // ✅ Initialize pos from the actual CSS-rendered position
   let posX, posY;
   function syncStartFromCSS() {
     const rect = noBtn.getBoundingClientRect();
@@ -618,12 +603,8 @@
 
   const TRIGGER_DISTANCE = 130;
   const PREDICT_FRAMES = 3;
-
   const FRICTION = 0.88;
   const MAX_SPEED = 18;
-
-  const WIGGLE = 0;
-
   const EDGE_MARGIN = 60;
   const EDGE_STRENGTH = 4.5;
 
@@ -644,7 +625,6 @@
       return;
     }
 
-    // ✅ stay still until user interacts
     if (!armed) {
       vx = 0; vy = 0;
       posX = clamp(posX, 0, maxX);
@@ -655,7 +635,6 @@
       return;
     }
 
-    // Predict pointer slightly
     const targetMouseX = mouseX + mouseVX * PREDICT_FRAMES;
     const targetMouseY = mouseY + mouseVY * PREDICT_FRAMES;
 
@@ -666,41 +645,17 @@
     const dy = cy - targetMouseY;
     const dist = Math.hypot(dx, dy);
 
-    // ✅ completely still unless pointer is close
-    if (dist >= TRIGGER_DISTANCE) {
-      vx = 0;
-      vy = 0;
-
-      posX = clamp(posX, 0, maxX);
-      posY = clamp(posY, 0, maxY);
-
-      noBtn.style.left = posX + "px";
-      noBtn.style.top = posY + "px";
-
-      requestAnimationFrame(animate);
-      return;
-    }
-
-    // Run away
-    if (dist > 0.0001) {
+    if (dist < TRIGGER_DISTANCE && dist > 0.0001) {
       const t = (TRIGGER_DISTANCE - dist) / TRIGGER_DISTANCE;
       const accel = 3.0 + 14.0 * t * t;
-
       vx += (dx / dist) * accel;
       vy += (dy / dist) * accel;
     }
 
-    // Edge repulsion only while triggered
     if (posX < EDGE_MARGIN) vx += EDGE_STRENGTH;
     if (posX > maxX - EDGE_MARGIN) vx -= EDGE_STRENGTH;
     if (posY < EDGE_MARGIN) vy += EDGE_STRENGTH;
     if (posY > maxY - EDGE_MARGIN) vy -= EDGE_STRENGTH;
-
-    // Optional wiggle (0)
-    if (WIGGLE !== 0) {
-      vx += (Math.random() - 0.5) * WIGGLE;
-      vy += (Math.random() - 0.5) * WIGGLE;
-    }
 
     vx *= FRICTION;
     vy *= FRICTION;
@@ -724,13 +679,6 @@
   }
   requestAnimationFrame(animate);
 
-  // If cursor touches it, quick hop
-  noBtn.addEventListener("mouseenter", () => {
-    vx += (Math.random() - 0.5) * 12;
-    vy += (Math.random() - 0.5) * 12;
-  });
-
-  // Hearts
   function createHearts() {
     for (let i = 0; i < 60; i++) {
       const heart = document.createElement("div");
@@ -759,7 +707,6 @@
 
     createHearts();
 
-    // ✅ Reveal "next page" (NO auto-scroll)
     page2.style.display = "block";
   });
 </script>
